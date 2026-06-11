@@ -1,2 +1,6 @@
 [phases.build]
-cmds = ["composer install --no-dev", "php artisan migrate --force"]
+cmds = [
+    "composer install --no-dev",
+    "touch database/database.sqlite",
+    "php artisan migrate --force"
+]
