@@ -23,24 +23,26 @@ public function store(Request $request, Trainer $trainer)
         'level'      => 'nullable|integer|min:1|max:100',
     ]);
 
-    $response = http::get("https://pokeapi.co/api/v2/pokemon/{$validated['pokemon_id']}");
+    // Fetch from PokéAPI
+    $response = Http::get("https://pokeapi.co/api/v2/pokemon/{$validated['pokemon_id']}");
 
     if ($response->failed()) {
-        return response()->json(['error' => 'Invalid pokemon_id'], 422);
+        return response()->json(['message' => 'Pokemon not found'], 404);
     }
 
-    $pokemonData = $response->json();
+    $pokeData = $response->json();
 
-    // create pokemon belonging to this trainer
+    // Save to database
     $pokemon = $trainer->pokemon()->create($validated);
 
+    // Return combined response
     return response()->json([
-        'caught_pokemon' => $pokemon,
+        'caught' => $pokemon,
         'species' => [
-            'name' => $pokemonData['name'],
-            'types' => collect($pokemonData['types'])->pluck('type.name'),
-            'sprite' => $pokemonData['sprites']['front_default'],
-        ],
+            'name'   => $pokeData['name'],
+            'types'  => collect($pokeData['types'])->pluck('type.name'),
+            'sprite' => $pokeData['sprites']['front_default'],
+        ]
     ], 201);
 }
 
